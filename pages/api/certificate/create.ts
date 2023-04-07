@@ -5,6 +5,7 @@ import pdfkit from 'pdfkit';
 import blobStream from 'blob-stream';
 import * as Buffer from 'node:buffer';
 import { createClient } from '@supabase/supabase-js'
+import path from "path"
 
 function createPDFBlob(name: string): Promise<Blob> {
     const doc = new pdfkit({
@@ -19,7 +20,7 @@ function createPDFBlob(name: string): Promise<Blob> {
 
     const stream = doc.pipe(blobStream());
 
-    doc.image('./image.png', {
+    doc.image(path.resolve("./public", "image.png"), {
         cover: [doc.page.width, doc.page.height],
     });
 
