@@ -2,20 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import getConfig from 'next/config'
 
 import supabaseClient from '@/supabaseClient';
-import { request } from 'http';
 
 const { serverRuntimeConfig } = getConfig()
-
-// function UrlExists(url, callback) {
-//     var http = new XMLHttpRequest();
-//     http.open('HEAD', url);
-//     http.onreadystatechange = function() {
-//         if (this.readyState == this.DONE) {
-//             callback(this.status != 404);
-//         }
-//     };
-//     http.send();
-// }
 
 type Data = {
     data?: string,
