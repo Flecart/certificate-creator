@@ -1,11 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import getConfig from 'next/config'
 
 import uuid4 from "uuid4";
 import pdfkit from 'pdfkit';
 import blobStream from 'blob-stream';
 import * as Buffer from 'node:buffer';
-import { createClient } from '@supabase/supabase-js'
 import path from "path"
+import supabaseClient from '@/supabaseClient';
+
+const { serverRuntimeConfig } = getConfig()
 
 function createPDFBlob(name: string): Promise<Blob> {
     const doc = new pdfkit({
@@ -59,34 +62,27 @@ async function createPDF(name: string): Promise<Buffer.Buffer> {
 type Data = {
     data?: string,
     error?: string
-  }
+}
   
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<Data>
 ) {
-    const title = req.query.title as string || 'No Title'
+    const name = req.query.name as string || ''
+    const surname = req.query.surname as string || ''
+
+    if (!name || !surname) {
+        return res.status(400).json({ error: 'Missing name or surname' })
+    }
+
+    const title = `${name} ${surname}`
 
     try {
-        // Create a Supabase client with the Auth context of the logged in user.
-        const supabaseClient = createClient(
-
-            // Supabase API URL - env var exported by default.
-            process.env['SUPABASE_URL'] ?? '',
-
-            // Supabase API ANON KEY - env var exported by default.
-            process.env['SUPABASE_ANON_KEY'] ?? '',
-
-            // Create client with Auth context of the user that called the function.
-            // This way your row-level-security (RLS) policies are applied.
-            { global: { headers: { Authorization: req.cookies['Authorization'] ?? ''} } }
-        )
-
         const id = uuid4();
         const imageData = await createPDF(title);
         const { data, error }  = await supabaseClient
             .storage
-            .from('test')
+            .from(serverRuntimeConfig.supabaseBucket)
             .upload(`${id}.pdf`, imageData, {
                 contentType: 'application/pdf',
                 cacheControl: '3600',
@@ -98,10 +94,9 @@ export default async function handler(
         } else {
             const elementUrl = supabaseClient
                 .storage
-                .from('test')
+                .from(serverRuntimeConfig.supabaseBucket)
                 .getPublicUrl(`${id}.pdf`)
-
-            return res.status(200).json({ data: elementUrl.data.publicUrl });
+            return res.redirect(302, elementUrl.data.publicUrl);
         }
 
     } catch (error) {
