@@ -7,12 +7,12 @@ import blobStream from 'blob-stream';
 import * as Buffer from 'node:buffer';
 import path from "path"
 import supabaseClient from '@/supabaseClient';
+import fs from 'fs';
 
 const { serverRuntimeConfig } = getConfig()
 
 function createPDFBlob(name: string): Promise<Blob> {
     const doc = new pdfkit({
-        layout : 'landscape',
         margins : { // by default, all are 72, we don´t want margins
             top: 0,
            bottom:0,
@@ -21,21 +21,42 @@ function createPDFBlob(name: string): Promise<Blob> {
         },
     });
 
+    // write to fs
+    // doc.pipe(fs.createWriteStream('output.pdf'));
+
     const stream = doc.pipe(blobStream());
 
-    doc.image(path.resolve("./public", "image.png"), {
+    doc.image(path.resolve("./public", "certificato_mentee.jpg"), {
         cover: [doc.page.width, doc.page.height],
     });
+    // 595.28 x 841.89
+
+    const widthStart = 147;
+    const heightStart = 455;
+    const width = 325;
+    const height = 30;
+    let maxFontSize = 40;
+
+    // Use this to debug the position of the rectangle
+    // doc.polygon([widthStart, heightStart], [widthStart + width, heightStart], [widthStart + width, heightStart + height], [widthStart, heightStart + height]);
+    // doc.stroke();
+
+    doc.fontSize(maxFontSize);
+    // -20 is set for spacing compatibility (its arbitrary value)
+    while (doc.widthOfString(name, {lineBreak: false}) > width - 20 || doc.heightOfString(name) > height) {
+        maxFontSize--;
+        doc.fontSize(maxFontSize);
+    }
 
     doc
-    .fontSize(25)
+    .font(path.resolve("./public/fonts", "AtypDisplay-Regular.otf"))
     .text(name,
-        doc.page.width / 3, doc.page.height / 2, {
-        width: doc.page.width / 3,
-        align: 'center'
+        widthStart, heightStart, {
+        width: width,
+        align: 'left'
     });
     doc.end();
-    
+
     return new Promise<Blob>((resolve, reject) => {
         stream.on('finish', () => {
             const blob = stream.toBlob('application/pdf');
