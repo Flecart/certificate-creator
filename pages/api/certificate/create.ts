@@ -19,6 +19,7 @@ function createPDFBlob(name: string): Promise<Blob> {
             left: 0,
           right: 0
         },
+        size: 'A4',
     });
 
     // write to fs
@@ -30,10 +31,11 @@ function createPDFBlob(name: string): Promise<Blob> {
         cover: [doc.page.width, doc.page.height],
     });
     // 595.28 x 841.89
+    // console.log(doc.page.width, doc.page.height);
 
-    const widthStart = 147;
-    const heightStart = 455;
-    const width = 325;
+    const widthStart = 145;
+    const heightStart = 435;
+    const width = 310;
     const height = 30;
     let maxFontSize = 40;
 
