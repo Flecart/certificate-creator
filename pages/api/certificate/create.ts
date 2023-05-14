@@ -49,7 +49,7 @@ function createPDFBlob(name: string): Promise<Blob> {
     }
 
     doc
-    .font(path.resolve("./public/fonts", "AtypDisplay-Regular.otf"))
+    .font(path.resolve("./public/fonts", "AtypDisplay-Semibold.otf"))
     .text(name,
         widthStart, heightStart, {
         width: width,
