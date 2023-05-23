@@ -14,12 +14,13 @@ const { serverRuntimeConfig } = getConfig()
 function createPDFBlob(name: string): Promise<Blob> {
     const doc = new pdfkit({
         margins : { // by default, all are 72, we don´t want margins
-            top: 0,
+           top: 0,
            bottom:0,
-            left: 0,
-          right: 0
+           left: 0,
+           right: 0
         },
-        size: 'A4',
+        layout: 'landscape',
+        size: [1080, 1920],
     });
 
     // write to fs
@@ -27,17 +28,18 @@ function createPDFBlob(name: string): Promise<Blob> {
 
     const stream = doc.pipe(blobStream());
 
-    doc.image(path.resolve("./public", "certificato_mentee.jpg"), {
+    doc.image(path.resolve("./public", "nucleate-certificate.jpg"), {
         cover: [doc.page.width, doc.page.height],
     });
+    
     // 595.28 x 841.89
-    // console.log(doc.page.width, doc.page.height);
+    console.log(doc.page.width, doc.page.height);
 
-    const widthStart = 145;
-    const heightStart = 435;
-    const width = 310;
-    const height = 30;
-    let maxFontSize = 40;
+    const widthStart = 1200;
+    const heightStart = 820;
+    const width = 600;
+    const height = 80;
+    let maxFontSize = 100;
 
     // Use this to debug the position of the rectangle
     // doc.polygon([widthStart, heightStart], [widthStart + width, heightStart], [widthStart + width, heightStart + height], [widthStart, heightStart + height]);
@@ -45,13 +47,13 @@ function createPDFBlob(name: string): Promise<Blob> {
 
     doc.fontSize(maxFontSize);
     // -20 is set for spacing compatibility (its arbitrary value)
-    while (doc.widthOfString(name, {lineBreak: false}) > width - 20 || doc.heightOfString(name) > height) {
+    while (doc.widthOfString(name, {lineBreak: false}) > width - 10 || doc.heightOfString(name) > height) {
         maxFontSize--;
         doc.fontSize(maxFontSize);
     }
 
     doc
-    .font(path.resolve("./public/fonts", "AtypDisplay-Semibold.otf"))
+    .font(path.resolve("./public/fonts", "Roobert-Regular.otf"))
     .text(name,
         widthStart, heightStart, {
         width: width,
@@ -92,17 +94,14 @@ export default async function handler(
     res: NextApiResponse<Data>
 ) {
     const name = req.query.name as string || ''
-    const surname = req.query.surname as string || ''
 
-    if (!name || !surname) {
+    if (!name) {
         return res.status(400).json({ error: 'Missing name or surname' })
     }
 
-    const title = `${name} ${surname}`
-
     try {
         const id = uuid4();
-        const imageData = await createPDF(title);
+        const imageData = await createPDF(name);
         const { data, error }  = await supabaseClient
             .storage
             .from(serverRuntimeConfig.supabaseBucket)
@@ -119,7 +118,7 @@ export default async function handler(
                 .storage
                 .from(serverRuntimeConfig.supabaseBucket)
                 .getPublicUrl(`${id}.pdf`)
-            return res.redirect(302, elementUrl.data.publicUrl);
+            return res.status(200).json({ data: elementUrl.data.publicUrl });
         }
 
     } catch (error) {
