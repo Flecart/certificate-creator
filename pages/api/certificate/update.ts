@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-import { certificateLists, listBucketName } from '@/lists';
+import { certificateLists, listBucketName, makeListName } from '@/lists';
 import supabaseClient from '@/supabaseClient';
 import { CertificatePerson, validatePerson } from '@/models/people';
 
@@ -13,7 +13,7 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<Data>
 ) {
-    const name = req.query.name as string || ''
+    const name = req.query.list as string || ''
 
     const currList = certificateLists.find((item) => item.name === name);
 
@@ -35,7 +35,7 @@ export default async function handler(
         const { data, error }  = await supabaseClient
         .storage
         .from(listBucketName)
-        .upload(`${name}-persons.json`, JSON.stringify(certificatePersons), {
+        .upload(makeListName(name), JSON.stringify(certificatePersons), {
             contentType: 'application/json',
             upsert: true,
         });

@@ -11,3 +11,7 @@ export const certificateLists: CertListItem[] = [
         "link": "https://api.gomry.co/v1/contacts?listID=YB8Ef1QBF50qrAz16h5W"
     }
 ]
+
+export const makeListName = (name: string): string => {
+    return `${name}-persons.json`;
+}
