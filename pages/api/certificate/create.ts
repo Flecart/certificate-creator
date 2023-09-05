@@ -72,7 +72,7 @@ function createPDFBlob(name: string): Promise<Blob> {
     });
 }
 
-async function createPDF(name: string): Promise<Buffer.Buffer> {
+export async function createPDF(name: string): Promise<Buffer.Buffer> {
     const pdf = await createPDFBlob(name);
     const chunks = [];
     // @ts-ignore Type 'ReadableStream<Uint8Array>' is not an array type or a string type.
