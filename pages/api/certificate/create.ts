@@ -8,6 +8,8 @@ import * as Buffer from 'node:buffer';
 import path from "path"
 import supabaseClient from '@/supabaseClient';
 import fs from 'fs';
+import { listBucketName, makeListName } from '@/lists';
+import { CertificatePerson } from '@/models/people';
 
 const { serverRuntimeConfig } = getConfig()
 
@@ -90,18 +92,35 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<Data>
 ) {
-    const name = req.query.name as string || ''
-    const surname = req.query.surname as string || ''
+    const username = req.query.username as string || ''
+    const list = req.query.list as string || "";
 
-    if (!name || !surname) {
-        return res.status(400).json({ error: 'Missing name or surname' })
+    if (!username || !list) {
+        return res.status(400).json({ error: 'Missing name or list query' })
     }
 
-    const title = `${name} ${surname}`
+    const title = `${username}`
+
+    const {data, error} = await supabaseClient
+    .storage
+    .from(listBucketName)
+    .download(makeListName(list));
+
+    if (error) {
+        return res.status(400).json({ error: error.message })
+    }
+
+    const textData = (await data?.text()) || "[]";
+    const persons = JSON.parse(textData) as CertificatePerson[];
+    const personCertificate = persons.find((person) => person.username === username)
+
+    if (!personCertificate) {
+        return res.status(400).json({ error: "Person not found in list, you probably are not in the community, contact administrators if it's not correct" });
+    }
 
     try {
-        const id = uuid4();
-        const imageData = await createPDF(title);
+        const id = username;
+        const imageData = await createPDF(personCertificate.name);
         const { data, error }  = await supabaseClient
             .storage
             .from(serverRuntimeConfig.supabaseBucket)
