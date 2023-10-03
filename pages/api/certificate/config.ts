@@ -30,8 +30,7 @@ const schema = {
         "required": ["date", "name"]
       },
       "peopleUrl": {
-        "type": "string",
-        "format": "url"
+        "type": "string"
       }
     },
     "required": ["bucketName", "pdfconfig", "peopleUrl"],
@@ -82,7 +81,7 @@ const schema = {
             "$ref": "#/definitions/fontPosition"
           }
         },
-        "required": ["name", "fontPosition"]
+        "required": ["fontPosition"]
       }
     }
 }
