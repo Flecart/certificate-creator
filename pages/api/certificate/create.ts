@@ -92,19 +92,17 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<Data>
 ) {
-    const username = req.query.username as string || ''
+    const username = req.query.username as string || "";
     const list = req.query.list as string || "";
 
     if (!username || !list) {
         return res.status(400).json({ error: 'Missing name or list query' })
     }
 
-    const title = `${username}`
-
     const {data, error} = await supabaseClient
-    .storage
-    .from(listBucketName)
-    .download(makeListName(list));
+        .storage
+        .from(listBucketName)
+        .download(makeListName(list));
 
     if (error) {
         return res.status(400).json({ error: error.message })
@@ -126,7 +124,6 @@ export default async function handler(
             .from(serverRuntimeConfig.supabaseBucket)
             .upload(`${id}.pdf`, imageData, {
                 contentType: 'application/pdf',
-                cacheControl: '3600',
                 upsert: true,
         })
 
@@ -141,11 +138,11 @@ export default async function handler(
         }
 
     } catch (error) {
-        console.error(error)
+        console.error(error);
         if (error instanceof Error) {
-            return res.status(400).json({ error: error.message })
+            return res.status(400).json({ error: error.message });
           } else {
-            return res.status(400).json({ error: "Unknown error has occurred" })
+            return res.status(400).json({ error: "Unknown error has occurred" });
           }
     }
 }

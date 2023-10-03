@@ -42,14 +42,13 @@ export default async function handler(
         res.setHeader('Content-Disposition', `attachment; filename="LTF certificate 2023 - ${name}.pdf"`);
         res.send(imageData);
  
-
     } catch (error) {
-        console.error(error)
+        console.error(error);
         if (error instanceof Error) {
-            return res.status(400).json({ error: error.message })
-          } else {
-            return res.status(400).json({ error: "Unknown error has occurred" })
-          }
+            return res.status(400).json({ error: error.message });
+        } else {
+            return res.status(400).json({ error: "Unknown error has occurred" });
+        }
     }
 }
 
@@ -58,9 +57,9 @@ function calculateMD5(input: string): string {
 }
 
 function verifySignature(message: string, secret: string, signature: string): boolean {
-  const hash = crypto.createHmac('sha256', secret)
-    .update(message)
-    .digest('hex');
+    const hash = crypto.createHmac('sha256', secret)
+        .update(message)
+        .digest('hex');
 
-  return hash === signature;
+    return hash === signature;
 }
