@@ -18,9 +18,9 @@ export default async function handler(
     if (req.method !== 'POST') {
         return res.status(400).json({error: `Only POST method is allowed`});
     }
-    const name = req.query.list as string || ''
-    if (!name) {
-        return res.status(400).json({error: `Missing name query`});
+    const listName = req.query.list as string || ''
+    if (!listName) {
+        return res.status(400).json({error: `Missing list name query`});
     }
     // TODO: make request to present lists
 
@@ -49,7 +49,7 @@ export default async function handler(
         }
 
         // read the file from the filepath
-        const { data, error }  = await fileService.uploadFile(name, file);
+        const { data, error }  = await fileService.uploadFile(listName, file);
         if (error) {
             return res.status(400).json({error: error.message});
         }

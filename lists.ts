@@ -23,5 +23,5 @@ export const makeConfigName = (name: string): string => {
 }
 
 export const makeImageName = (name: string): string => {
-    return `${name}-${uuid4()}.png`;
+    return `${name}-image`;
 }
