@@ -1,10 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-import * as list from '@/lists';
 import supabaseClient from '@/supabaseClient';
-import { CertificatePerson, validatePerson } from '@/models/people';
-const Ajv = require('ajv');
+import { ConfigRequest } from '@/models/requests';
+import * as configService from '@/services/configService';
 
+const Ajv = require('ajv');
 
 type Data = {
     data?: string,
@@ -83,29 +83,6 @@ const schema = {
       }
     }
 }
-
-interface FontPosition {
-    fontWidth: number;
-    position: {
-        x: number;
-        y: number;
-    };
-    boxLength: number;
-}
-
-interface ConfigRequest {
-    bucketName: string;
-    pdfconfig: {
-      date: {
-        year: number;
-        fontPosition: FontPosition;
-      };
-      name: {
-        name: string;
-        fontPosition: FontPosition;
-      };
-    };
-}
   
 // Create an instance of the Ajv validator
 const ajv = new Ajv();
@@ -134,13 +111,7 @@ export default async function handler(
 
     const parsedData = bodyData as ConfigRequest;
 
-    const { data, error }  = await supabaseClient
-    .storage
-    .from(list.listBucketName)
-    .upload(list.makeConfigName(name), JSON.stringify(parsedData), {
-        contentType: 'application/json',
-        upsert: true,
-    });
+    const { data, error }  = await configService.updateConfig(name, parsedData);
 
     if (error) {
         return res.status(400).json({error: error.message});
