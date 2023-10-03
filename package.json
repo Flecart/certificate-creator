@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@types/blob-stream": "^0.1.30",
+    "@types/formidable": "^3.4.3",
     "@types/pdfkit": "^0.12.9",
     "@types/uuid4": "^2.0.0"
   }

@@ -24,6 +24,13 @@ http://localhost:3000/api/certificate/createAdmin?fullName=Nome%20Cognome&paramS
 
 If you want to make the request with cURL:
 
+```bash
+curl -H "Content-Type: application/json" --request POST  --data @body.json [host_base_url]/api/certificate/config?list=list-name
 ```
-curl -H "Content-Type: application/json" --request POST  --data @body.json [host_base_url]/api/certificate/config
+
+### upload a template image
+
+```bash
+
+curl  -F upload=@image.jpeg [host_base_url]/api/certificate/template?list=list-name
 ```
