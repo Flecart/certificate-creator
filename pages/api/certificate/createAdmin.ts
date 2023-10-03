@@ -34,9 +34,7 @@ export default async function handler(
     }
 
     name = fullName;
-    let username = calculateMD5(fullName + serverRuntimeConfig.certificatesSalt);
-  
-    
+
     try {
         const imageData = await createPDF(name);
 
