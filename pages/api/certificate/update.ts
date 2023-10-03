@@ -16,7 +16,6 @@ export default async function handler(
     const name = req.query.list as string || ''
 
     const currList = certificateLists.find((item) => item.name === name);
-
     if (!currList) {
         return res.status(404).json({error: `could not find ${name} list to update in our servers`});
     }

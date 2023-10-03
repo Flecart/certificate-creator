@@ -8,10 +8,10 @@ export const listBucketName = "lists";
 export const certificateLists: CertListItem[] = [
     {
         "name": "lead-the-future",
-        "link": "https://api.gomry.co/v1/contacts?listID=YB8Ef1QBF50qrAz16h5W"
+        "link": process.env.LEAD_THE_FUTURE_LIST!
     }
 ]
 
 export const makeListName = (name: string): string => {
-    return `${name}-persons.json`;
+    return `${name}-people.json`;
 }
