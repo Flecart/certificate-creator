@@ -13,7 +13,7 @@ import { CertificatePerson } from '@/models/people';
 
 const { serverRuntimeConfig } = getConfig()
 
-function createPDFBlob(name: string): Promise<Blob> {
+function createPDFBlob(name: string, date: string = "2024"): Promise<Blob> {
     const doc = new pdfkit({
         margins : { // by default, all are 72, we don´t want margins
             top: 0,
@@ -26,12 +26,34 @@ function createPDFBlob(name: string): Promise<Blob> {
 
     // write to fs
     // doc.pipe(fs.createWriteStream('output.pdf'));
-
     const stream = doc.pipe(blobStream());
 
     doc.image(path.resolve("./public", "certificato_mentee.jpg"), {
         cover: [doc.page.width, doc.page.height],
     });
+
+    // position and size of the date
+    const widthStartDate = 260;
+    const heightStartDate = 238;
+    const widthDate = 130;
+    const heightDate = 70;
+    const dateFontSize = 48;
+    
+    // Use this to debug the position of the text
+    // doc.polygon([widthStartDate, heightStartDate], [widthStartDate + widthDate, heightStartDate], [widthStartDate + widthDate, heightStartDate + heightDate], [widthStartDate, heightStartDate + heightDate]);
+    // doc.stroke();
+
+    doc.fontSize(dateFontSize);
+    doc.fillColor("#FFFFFF");
+    doc
+    .font(path.resolve("./public/fonts", "AtypDisplay-Semibold.otf"))
+    .text(date,
+        widthStartDate, heightStartDate, {
+        width: widthDate,
+        align: 'left'
+    });
+    doc.fillColor("#000000");
+
     // 595.28 x 841.89
     // console.log(doc.page.width, doc.page.height);
 
