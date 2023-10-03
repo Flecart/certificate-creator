@@ -5,7 +5,8 @@ const nextConfig = {
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
     supabaseAUTHKey: process.env.SUPABASE_AUTH_KEY,
-    supabaseBucket: process.env.SUPABASE_BUCKET
+    supabaseBucket: process.env.SUPABASE_BUCKET,
+    APICreateSuperUserKey: process.env.API_CREATE_SUPER_USER_KEY || uuidv4(), // putting a uuid here so that it will never be guessable
   }
 }
 
