@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-import { certificateLists, listBucketName, makeListName } from '@/lists';
+import { certificateLists, listBucketName, makeConfigName, makeListName } from '@/lists';
 import supabaseClient from '@/supabaseClient';
 import { CertificatePerson, validatePerson } from '@/models/people';
+import * as configService from '@/services/configService';
 
 type Data = {
     data?: string,
@@ -24,7 +25,12 @@ export default async function handler(
     }
 
     try {
-        const response = await fetch(currList.link);
+        const responseConfig = await configService.getConfig(name);
+        if (responseConfig.error) {
+            throw new Error(responseConfig.error.message);
+        }
+
+        const response = await fetch(responseConfig.data.peopleUrl);
         if (!response.ok) throw new Error("Unable to fetch the list from outside url");
         const bodyData = await response.json();
 

@@ -21,7 +21,7 @@ export async function uploadFile(listName: string, file: File): Promise<
     .storage
     .from(list.listBucketName)
     .upload(name, readFile, {
-        contentType: file.mimetype,
+        contentType: file.mimetype || 'image/png', // TODO: check if this is correct
         upsert: true,
     });
 

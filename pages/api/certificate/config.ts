@@ -28,10 +28,13 @@ const schema = {
           }
         },
         "required": ["date", "name"]
+      },
+      "peopleUrl": {
+        "type": "string",
+        "format": "url"
       }
     },
-    "required": ["bucketName", "pdfconfig"]
-    ,
+    "required": ["bucketName", "pdfconfig", "peopleUrl"],
     "definitions": {
       "fontPosition": {
         "type": "object",

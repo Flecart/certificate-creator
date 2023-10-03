@@ -23,5 +23,6 @@
                 "boxLength": 100
             }
         }
-    }
+    },
+    "peopleUrl": "https://s3.amazonaws.com/my-bucket/people.json"
 }

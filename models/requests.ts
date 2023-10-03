@@ -20,4 +20,5 @@ export interface ConfigRequest {
         fontPosition: FontPosition;
       };
     };
+    peopleUrl: string;
 }
