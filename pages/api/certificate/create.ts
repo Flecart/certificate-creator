@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import getConfig from 'next/config'
 
 import uuid4 from "uuid4";
-import pdfkit from 'pdfkit';
+import pdfkit, { write } from 'pdfkit';
 import blobStream from 'blob-stream';
 import * as Buffer from 'node:buffer';
 import path from "path"
@@ -12,6 +12,19 @@ import { listBucketName, makeListName } from '@/lists';
 import { CertificatePerson } from '@/models/people';
 
 const { serverRuntimeConfig } = getConfig()
+
+function writeText(doc: PDFKit.PDFDocument, text: string, x: number, y: number, width: number, fontSize: number, debug: boolean = false) {
+    if (debug) {
+        doc.polygon([x, y], [x + width, y], [x + width, y + fontSize], [x, y + fontSize]);
+        doc.stroke();
+    }
+
+    doc.fontSize(fontSize);
+    doc.text(text, x, y, {
+        width: width,
+        align: 'left'
+    });
+}
 
 function createPDFBlob(name: string, date: string = "2024"): Promise<Blob> {
     const doc = new pdfkit({
@@ -23,6 +36,8 @@ function createPDFBlob(name: string, date: string = "2024"): Promise<Blob> {
         },
         size: 'A4',
     });
+    
+    doc.font(path.resolve("./public/fonts", "AtypDisplay-Semibold.otf"));
 
     // write to fs
     // doc.pipe(fs.createWriteStream('output.pdf'));
@@ -32,26 +47,8 @@ function createPDFBlob(name: string, date: string = "2024"): Promise<Blob> {
         cover: [doc.page.width, doc.page.height],
     });
 
-    // position and size of the date
-    const widthStartDate = 260;
-    const heightStartDate = 238;
-    const widthDate = 130;
-    const heightDate = 70;
-    const dateFontSize = 48;
-    
-    // Use this to debug the position of the text
-    // doc.polygon([widthStartDate, heightStartDate], [widthStartDate + widthDate, heightStartDate], [widthStartDate + widthDate, heightStartDate + heightDate], [widthStartDate, heightStartDate + heightDate]);
-    // doc.stroke();
-
-    doc.fontSize(dateFontSize);
     doc.fillColor("#FFFFFF");
-    doc
-    .font(path.resolve("./public/fonts", "AtypDisplay-Semibold.otf"))
-    .text(date,
-        widthStartDate, heightStartDate, {
-        width: widthDate,
-        align: 'left'
-    });
+    writeText(doc, date, 260, 238, 130, 48);
     doc.fillColor("#000000");
 
     // 595.28 x 841.89
@@ -62,25 +59,13 @@ function createPDFBlob(name: string, date: string = "2024"): Promise<Blob> {
     const width = 310;
     const height = 30;
     let maxFontSize = 40;
-
-    // Use this to debug the position of the rectangle
-    // doc.polygon([widthStart, heightStart], [widthStart + width, heightStart], [widthStart + width, heightStart + height], [widthStart, heightStart + height]);
-    // doc.stroke();
-
     doc.fontSize(maxFontSize);
     // -20 is set for spacing compatibility (its arbitrary value)
     while (doc.widthOfString(name, {lineBreak: false}) > width - 20 || doc.heightOfString(name) > height) {
         maxFontSize--;
         doc.fontSize(maxFontSize);
     }
-
-    doc
-    .font(path.resolve("./public/fonts", "AtypDisplay-Semibold.otf"))
-    .text(name,
-        widthStart, heightStart, {
-        width: width,
-        align: 'left'
-    });
+    writeText(doc, name, widthStart, heightStart, width, maxFontSize);
     doc.end();
 
     return new Promise<Blob>((resolve, reject) => {
