@@ -15,3 +15,7 @@ export const certificateLists: CertListItem[] = [
 export const makeListName = (name: string): string => {
     return `${name}-people.json`;
 }
+
+export const makeConfigName = (name: string): string => {
+    return `${name}-config.json`;
+}

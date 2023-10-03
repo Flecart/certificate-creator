@@ -9,12 +9,15 @@ type Data = {
     error?: string
 }
 
+/// updates the person list from the outside url
+/// @param list the list name to update
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<Data>
 ) {
     const name = req.query.list as string || ''
 
+    // TODO: modify this to a request to the config file.
     const currList = certificateLists.find((item) => item.name === name);
     if (!currList) {
         return res.status(404).json({error: `could not find ${name} list to update in our servers`});
