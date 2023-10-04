@@ -9,6 +9,11 @@ export function calculateMD5(input: string): string {
     return createHash('md5').update(input).digest('hex');
 }
 
+function verifySimpleMd5Signature(message: string, secret: string, signature: string): boolean {
+    const hash = calculateMD5(message + secret);
+    return hash === signature;
+}
+
 export function verifySignature(message: string, secret: string, signature: string): boolean {
     const hash = crypto.createHmac('sha256', secret)
         .update(message)
@@ -41,7 +46,9 @@ export function tryQueryAuthCheck(req: NextApiRequest): void { // throws HttpErr
             throw new HttpError(400, "Missing name in name permission validation");
         }
     
-        if(!verifySignature(fullName, serverRuntimeConfig.APICreateSuperUserKey, signerName )){
+        if(!verifySignature(fullName, serverRuntimeConfig.APICreateSuperUserKey, signerName)
+            &&
+        !verifySimpleMd5Signature(fullName, serverRuntimeConfig.APICreateSuperUserKey, signerName)) {
             throw new HttpError(401, "Invalid signature for name " + fullName);
         }
     }
