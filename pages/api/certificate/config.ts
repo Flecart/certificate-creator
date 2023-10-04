@@ -14,7 +14,7 @@ type Data = {
 const schema = {
     "type": "object",
     "properties": {
-      "bucketName": {
+      "bucketName": {  // same as listname
         "type": "string"
       },
       "pdfconfig": {

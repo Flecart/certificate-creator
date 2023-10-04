@@ -4,6 +4,7 @@ import crypto from 'crypto';
 
 import { createHash } from 'crypto';
 import {createPDF} from '@/pages/api/certificate/create'
+import * as configService from '@/services/configService';
 const { serverRuntimeConfig } = getConfig()
 
 type Data = {
@@ -18,6 +19,7 @@ export default async function handler(
     const fullName = req.query.fullName as string || "";
     const keySuperUser = req.query.keySuperUser as string || "";
     const signerName = req.query.paramSignedSuperUser as string || "";
+    const listName = req.query.listName as string || "";
 
     let name : string;
 
@@ -25,20 +27,30 @@ export default async function handler(
         return res.status(400).json({ error: 'Missing name' })
     }
 
-    if(signerName != ""){
-        if(!verifySignature(fullName, serverRuntimeConfig.APICreateSuperUserKey, signerName )){
-            return res.status(401).json({ error: 'Invalid signature for name ' + fullName})
-        }
-    } else if (keySuperUser != serverRuntimeConfig.APICreateSuperUserKey) {
+    if (!listName) {
+        return res.status(400).json({ error: 'Missing the name of the list for admin setting creation' })
+    }
+
+    if(signerName != "" && !verifySignature(fullName, serverRuntimeConfig.APICreateSuperUserKey, signerName )){
+        return res.status(401).json({ error: 'Invalid signature for name ' + fullName})
+    } 
+    
+    if (signerName == "" && keySuperUser !== serverRuntimeConfig.APICreateSuperUserKey) {
         return res.status(401).json({ error: 'Wrong key keySuperUser ' + keySuperUser })
+    }
+
+    const configResponse = await configService.getConfig(listName);
+    if (configResponse.error) {
+        return res.status(400).json({ error: configResponse.error.message })
     }
 
     name = fullName;
 
     try {
-        const imageData = await createPDF(name);
+        const imageData = await createPDF(name, configResponse.data);
 
         res.setHeader('Content-Type', 'application/pdf');
+        // TODO: change filename, should be put to config
         res.setHeader('Content-Disposition', `attachment; filename="LTF certificate 2023 - ${name}.pdf"`);
         res.send(imageData);
  

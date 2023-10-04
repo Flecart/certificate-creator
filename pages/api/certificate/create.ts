@@ -8,10 +8,10 @@ import * as Buffer from 'node:buffer';
 import path from "path"
 import supabaseClient from '@/supabaseClient';
 import fs from 'fs';
-import { listBucketName, makeListName } from '@/lists';
 import { CertificatePerson } from '@/models/people';
 import { ConfigRequest, FontPosition } from '@/models/requests';
 import * as configService from '@/services/configService';
+import * as list from '@/lists';
 
 const { serverRuntimeConfig } = getConfig()
 
@@ -31,7 +31,7 @@ function writeText(doc: PDFKit.PDFDocument, text: string, position: FontPosition
     });
 }
 
-function createPDFBlob(name: string, config: ConfigRequest): Promise<Blob> {
+async function createPDFBlob(name: string, config: ConfigRequest): Promise<Blob> {
     const doc = new pdfkit({
         margins : { // by default, all are 72, we don´t want margins
             top: 0,
@@ -45,10 +45,20 @@ function createPDFBlob(name: string, config: ConfigRequest): Promise<Blob> {
     doc.font(path.resolve("./public/fonts", "AtypDisplay-Semibold.otf"));
 
     // write to fs
-    doc.pipe(fs.createWriteStream('output.pdf'));
+    // doc.pipe(fs.createWriteStream('output.pdf'));
     const stream = doc.pipe(blobStream());
 
-    doc.image(path.resolve("./public", "certificato_mentee.jpg"), {
+    // get image from supabase and config
+    const imageResponse = await supabaseClient
+        .storage
+        .from(list.listBucketName)
+        .download(list.makeImageName(config.bucketName));
+
+    if (imageResponse.error) {
+        throw imageResponse.error;
+    }
+
+    doc.image(await imageResponse.data.arrayBuffer(), {
         cover: [doc.page.width, doc.page.height],
     });
 
@@ -104,7 +114,7 @@ export default async function handler(
     res: NextApiResponse<Data>
 ) {
     const username = req.query.username as string || "";
-    const list = req.query.list as string || "";
+    const listNmae = req.query.list as string || "";
 
     if (!username || !list) {
         return res.status(400).json({ error: 'Missing name or list query' })
@@ -112,13 +122,13 @@ export default async function handler(
 
     const {data, error} = await supabaseClient
         .storage
-        .from(listBucketName)
-        .download(makeListName(list));
+        .from(list.listBucketName)
+        .download(list.makeListName(listNmae));
     if (error) {
         return res.status(400).json({ error: error.message })
     }
 
-    const configResponse = await configService.getConfig(list);
+    const configResponse = await configService.getConfig(listNmae);
     if (configResponse.error) {
         return res.status(400).json({ error: configResponse.error.message })
     }
