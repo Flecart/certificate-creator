@@ -14,10 +14,9 @@ export default async function handler(
 ) {
 
     const fullName = req.query.fullName as string || "";
-    const keySuperUser = req.query.keySuperUser as string || "";
-    const signerName = req.query.paramSignedSuperUser as string || "";
     const listName = req.query.listName as string || "";
 
+    // NOTE: a good design should move this to a decorator function.
     try {
         signatureService.tryQueryAuthCheck(req);
     } catch (error) {

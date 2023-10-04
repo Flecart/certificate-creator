@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-import supabaseClient from '@/supabaseClient';
 import { ConfigRequest } from '@/models/requests';
 import * as configService from '@/services/configService';
+import * as signatureService from '@/services/signatureService';
+import { HttpError } from '@/models/errors';
 
 const Ajv = require('ajv');
 
@@ -102,9 +103,18 @@ export default async function handler(
         return res.status(400).json({error: `Only POST method is allowed`});
     }
     const name = req.query.list as string || ''
-    const keySuperUser = req.query.keySuperUser as string || "";
 
-    // TODO: make request to present lists
+    try {
+      signatureService.tryQueryAuthCheck(req);
+    } catch (error) {
+        if (error instanceof HttpError) {
+            return res.status(error.statusCode).json({ error: error.message });
+        } else {
+            return res.status(400).json({ error: "Unknown error has occurred in auth checking" });
+        }
+    }
+
+    // TODO: make request to present lists (non-existing list check)
 
     // validate post date using jsonschema format
     const bodyData = req.body;

@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import formidable, { File } from "formidable";
-import * as list from '@/lists';
-import supabaseClient from '@/supabaseClient';
 import * as fileService from '@/services/fileService';
+import * as signatureService from '@/services/signatureService';
+import { HttpError } from '@/models/errors';
 
 type Data = {
     data?: string,
@@ -21,6 +21,16 @@ export default async function handler(
     const listName = req.query.list as string || ''
     if (!listName) {
         return res.status(400).json({error: `Missing list name query`});
+    }
+
+    try {
+        signatureService.tryQueryAuthCheck(req);
+    } catch (error) {
+        if (error instanceof HttpError) {
+            return res.status(error.statusCode).json({ error: error.message });
+        } else {
+            return res.status(400).json({ error: "Unknown error has occurred in auth checking" });
+        }
     }
     // TODO: make request to present lists
 
