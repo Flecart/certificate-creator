@@ -43,6 +43,6 @@ export function tryQueryAuthCheck(req: NextApiRequest): void { // throws HttpErr
     
         if(!verifySignature(fullName, serverRuntimeConfig.APICreateSuperUserKey, signerName )){
             throw new HttpError(401, "Invalid signature for name " + fullName);
-        } 
+        }
     }
 }
