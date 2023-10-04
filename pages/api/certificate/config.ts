@@ -102,6 +102,8 @@ export default async function handler(
         return res.status(400).json({error: `Only POST method is allowed`});
     }
     const name = req.query.list as string || ''
+    const keySuperUser = req.query.keySuperUser as string || "";
+
     // TODO: make request to present lists
 
     // validate post date using jsonschema format
