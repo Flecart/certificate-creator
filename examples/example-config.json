@@ -1,0 +1,28 @@
+{
+    "bucketName": "my-bucket",
+    "pdfconfig": {
+        "date": {
+            "year": 2018,
+            "fontPosition": {
+                "fontWidth": 10,
+                "position": {
+                    "x": 100,
+                    "y": 100
+                },
+                "boxLength": 100
+            }
+        },
+        "name": {
+            "name": "John Doe",
+            "fontPosition": {
+                "fontWidth": 10,
+                "position": {
+                    "x": 100,
+                    "y": 100
+                },
+                "boxLength": 100
+            }
+        }
+    },
+    "peopleUrl": "https://s3.amazonaws.com/my-bucket/people.json"
+}

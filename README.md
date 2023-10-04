@@ -19,3 +19,18 @@ http://localhost:3000/api/certificate/createAdmin?fullName=Nome%20Cognome&keySup
 
 http://localhost:3000/api/certificate/createAdmin?fullName=Nome%20Cognome&paramSignedSuperUser=986f862cdasjndj465c98fbd25eb0480b01d7b81a71d3c199eec8623ff501b8
 ```
+
+### Update the config file
+
+If you want to make the request with cURL:
+
+```bash
+curl -H "Content-Type: application/json" --request POST  --data @body.json [host_base_url]/api/certificate/config?list=list-name&&keySuperUser=<key-placeholder>
+```
+
+### upload a template image
+
+```bash
+
+curl  -F upload=@image.jpeg <host_base_url>/api/certificate/template?list=list-name&keySuperUser=<key-placeholder>
+```

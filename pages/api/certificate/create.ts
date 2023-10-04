@@ -2,18 +2,36 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import getConfig from 'next/config'
 
 import uuid4 from "uuid4";
-import pdfkit from 'pdfkit';
+import pdfkit, { write } from 'pdfkit';
 import blobStream from 'blob-stream';
 import * as Buffer from 'node:buffer';
 import path from "path"
 import supabaseClient from '@/supabaseClient';
 import fs from 'fs';
-import { listBucketName, makeListName } from '@/lists';
 import { CertificatePerson } from '@/models/people';
+import { ConfigRequest, FontPosition } from '@/models/requests';
+import * as configService from '@/services/configService';
+import * as list from '@/lists';
 
 const { serverRuntimeConfig } = getConfig()
 
-function createPDFBlob(name: string): Promise<Blob> {
+function writeText(doc: PDFKit.PDFDocument, text: string, position: FontPosition, debug: boolean = false) {
+    const {fontWidth, position: {x, y}, boxLength} = position;
+    const fontSize = fontWidth;
+    const width = boxLength;
+    if (debug) {
+        doc.polygon([x, y], [x + width, y], [x + width, y + fontSize], [x, y + fontSize]);
+        doc.stroke();
+    }
+
+    doc.fontSize(fontSize);
+    doc.text(text, x, y, {
+        width: width,
+        align: 'left'
+    });
+}
+
+async function createPDFBlob(name: string, config: ConfigRequest): Promise<Blob> {
     const doc = new pdfkit({
         margins : { // by default, all are 72, we don´t want margins
             top: 0,
@@ -23,42 +41,45 @@ function createPDFBlob(name: string): Promise<Blob> {
         },
         size: 'A4',
     });
+    
+    doc.font(path.resolve("./public/fonts", "AtypDisplay-Semibold.otf"));
 
     // write to fs
     // doc.pipe(fs.createWriteStream('output.pdf'));
-
     const stream = doc.pipe(blobStream());
 
-    doc.image(path.resolve("./public", "certificato_mentee.jpg"), {
+    // get image from supabase and config
+    const imageResponse = await supabaseClient
+        .storage
+        .from(list.listBucketName)
+        .download(list.makeImageName(config.bucketName));
+
+    if (imageResponse.error) {
+        throw imageResponse.error;
+    }
+
+    doc.image(await imageResponse.data.arrayBuffer(), {
         cover: [doc.page.width, doc.page.height],
     });
+
+    doc.fillColor("#FFFFFF");
+    writeText(doc, config.pdfconfig.date.year.toString(), config.pdfconfig.date.fontPosition);
+    doc.fillColor("#000000");
+
     // 595.28 x 841.89
     // console.log(doc.page.width, doc.page.height);
 
-    const widthStart = 145;
-    const heightStart = 435;
-    const width = 310;
-    const height = 30;
-    let maxFontSize = 40;
-
-    // Use this to debug the position of the rectangle
-    // doc.polygon([widthStart, heightStart], [widthStart + width, heightStart], [widthStart + width, heightStart + height], [widthStart, heightStart + height]);
-    // doc.stroke();
-
+    const width = config.pdfconfig.name.fontPosition.boxLength;
+    let maxFontSize = config.pdfconfig.name.fontPosition.fontWidth;
     doc.fontSize(maxFontSize);
     // -20 is set for spacing compatibility (its arbitrary value)
-    while (doc.widthOfString(name, {lineBreak: false}) > width - 20 || doc.heightOfString(name) > height) {
+    while (doc.widthOfString(name, {lineBreak: false}) > width - 20) {
         maxFontSize--;
         doc.fontSize(maxFontSize);
     }
+    config.pdfconfig.name.fontPosition.fontWidth = maxFontSize;
 
-    doc
-    .font(path.resolve("./public/fonts", "AtypDisplay-Semibold.otf"))
-    .text(name,
-        widthStart, heightStart, {
-        width: width,
-        align: 'left'
-    });
+    writeText(doc, name, config.pdfconfig.name.fontPosition);
     doc.end();
 
     return new Promise<Blob>((resolve, reject) => {
@@ -72,8 +93,8 @@ function createPDFBlob(name: string): Promise<Blob> {
     });
 }
 
-export async function createPDF(name: string): Promise<Buffer.Buffer> {
-    const pdf = await createPDFBlob(name);
+export async function createPDF(name: string, config: ConfigRequest): Promise<Buffer.Buffer> {
+    const pdf = await createPDFBlob(name, config);
     const chunks = [];
     // @ts-ignore Type 'ReadableStream<Uint8Array>' is not an array type or a string type.
     for await (const chunk of pdf.stream()) {
@@ -93,7 +114,7 @@ export default async function handler(
     res: NextApiResponse<Data>
 ) {
     const username = req.query.username as string || "";
-    const list = req.query.list as string || "";
+    const listNmae = req.query.list as string || "";
 
     if (!username || !list) {
         return res.status(400).json({ error: 'Missing name or list query' })
@@ -101,12 +122,17 @@ export default async function handler(
 
     const {data, error} = await supabaseClient
         .storage
-        .from(listBucketName)
-        .download(makeListName(list));
-
+        .from(list.listBucketName)
+        .download(list.makeListName(listNmae));
     if (error) {
         return res.status(400).json({ error: error.message })
     }
+
+    const configResponse = await configService.getConfig(listNmae);
+    if (configResponse.error) {
+        return res.status(400).json({ error: configResponse.error.message })
+    }
+    const configData = configResponse.data;
 
     const textData = (await data?.text()) || "[]";
     const persons = JSON.parse(textData) as CertificatePerson[];
@@ -118,10 +144,10 @@ export default async function handler(
 
     try {
         const id = username;
-        const imageData = await createPDF(personCertificate.name);
+        const imageData = await createPDF(personCertificate.name, configData);
         const { data, error }  = await supabaseClient
             .storage
-            .from(serverRuntimeConfig.supabaseBucket)
+            .from(configData.bucketName)
             .upload(`${id}.pdf`, imageData, {
                 contentType: 'application/pdf',
                 upsert: true,
@@ -132,7 +158,7 @@ export default async function handler(
         } else {
             const elementUrl = supabaseClient
                 .storage
-                .from(serverRuntimeConfig.supabaseBucket)
+                .from(configData.bucketName)
                 .getPublicUrl(`${id}.pdf`)
             return res.redirect(302, elementUrl.data.publicUrl);
         }
