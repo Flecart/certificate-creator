@@ -26,7 +26,8 @@ export default async function handler(
     }
 
     if(signerName != ""){
-        if(!verifySignature(fullName, serverRuntimeConfig.APICreateSuperUserKey, signerName )){
+        if(!verifySignature(fullName, serverRuntimeConfig.APICreateSuperUserKey, signerName) &&
+            !verifySimpleMd5Signature(fullName, serverRuntimeConfig.APICreateSuperUserKey, signerName)){
             return res.status(401).json({ error: 'Invalid signature for name ' + fullName})
         }
     } else if (keySuperUser != serverRuntimeConfig.APICreateSuperUserKey) {
@@ -61,5 +62,11 @@ function verifySignature(message: string, secret: string, signature: string): bo
         .update(message)
         .digest('hex');
 
+    return hash === signature;
+}
+
+
+function verifySimpleMd5Signature(message: string, secret: string, signature: string): boolean {
+    const hash = calculateMD5(message + secret);
     return hash === signature;
 }
