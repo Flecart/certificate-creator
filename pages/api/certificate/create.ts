@@ -31,7 +31,12 @@ function writeText(doc: PDFKit.PDFDocument, text: string, position: FontPosition
     });
 }
 
-async function createPDFBlob(name: string, config: ConfigRequest): Promise<Blob> {
+async function createPDFBlob(name: string, config: ConfigRequest, year: number | null = null): Promise<Blob> {
+
+    if (year === null) {
+        year = config.pdfconfig.date.year;
+    }
+
     const doc = new pdfkit({
         margins : { // by default, all are 72, we don´t want margins
             top: 0,
@@ -63,7 +68,7 @@ async function createPDFBlob(name: string, config: ConfigRequest): Promise<Blob>
     });
 
     doc.fillColor("#FFFFFF");
-    writeText(doc, config.pdfconfig.date.year.toString(), config.pdfconfig.date.fontPosition);
+    writeText(doc, year.toString(), config.pdfconfig.date.fontPosition);
     doc.fillColor("#000000");
 
     // 595.28 x 841.89
@@ -93,8 +98,8 @@ async function createPDFBlob(name: string, config: ConfigRequest): Promise<Blob>
     });
 }
 
-export async function createPDF(name: string, config: ConfigRequest): Promise<Buffer.Buffer> {
-    const pdf = await createPDFBlob(name, config);
+export async function createPDF(name: string, config: ConfigRequest, year: number | null = null): Promise<Buffer.Buffer> {
+    const pdf = await createPDFBlob(name, config, year);
     const chunks = [];
     // @ts-ignore Type 'ReadableStream<Uint8Array>' is not an array type or a string type.
     for await (const chunk of pdf.stream()) {

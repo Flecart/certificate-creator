@@ -3,6 +3,8 @@ import {createPDF} from '@/pages/api/certificate/create'
 import * as configService from '@/services/configService';
 import * as signatureService from '@/services/signatureService';
 import { HttpError } from '@/models/errors';
+import getConfig from 'next/config'
+const { serverRuntimeConfig } = getConfig()
 
 type Data = {
     error?: string
@@ -14,7 +16,9 @@ export default async function handler(
 ) {
 
     const fullName = req.query.fullName as string || "";
-    const listName = req.query.listName as string || "";
+    const listName = req.query.listName as string || serverRuntimeConfig.defaultListName;
+    // get year from query or current year
+    const year = parseInt(req.query.year?.toString() || new Date().getFullYear().toString());
 
     // NOTE: a good design should move this to a decorator function.
     try {
@@ -41,7 +45,7 @@ export default async function handler(
     name = fullName;
 
     try {
-        const imageData = await createPDF(name, configResponse.data);
+        const imageData = await createPDF(name, configResponse.data, year);
 
         res.setHeader('Content-Type', 'application/pdf');
         // TODO: change filename, should be put to config

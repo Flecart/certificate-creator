@@ -35,9 +35,10 @@ export function autorize(key: string, secret: string, signature: string | null):
 export function tryQueryAuthCheck(req: NextApiRequest): void { // throws HttpError
     const fullName = req.query.fullName as string || "";
     const keySuperUser = req.query.keySuperUser as string || "";
-    const signerName = req.query.paramSignedSuperUser as string || "";
+    const signedName = req.query.paramSignedSuperUser as string || "";
+    const year = req.query.year as string || "";
 
-    if (signerName == "") {
+    if (keySuperUser != "") {
         if (keySuperUser !== serverRuntimeConfig.APICreateSuperUserKey) {
             throw new HttpError(401, "Wrong key keySuperUser " + keySuperUser);
         }
@@ -46,9 +47,9 @@ export function tryQueryAuthCheck(req: NextApiRequest): void { // throws HttpErr
             throw new HttpError(400, "Missing name in name permission validation");
         }
     
-        if(!verifySignature(fullName, serverRuntimeConfig.APICreateSuperUserKey, signerName)
+        if(!verifySignature(fullName + year, serverRuntimeConfig.APICreateSuperUserKey, signedName)
             &&
-        !verifySimpleMd5Signature(fullName, serverRuntimeConfig.APICreateSuperUserKey, signerName)) {
+        !verifySimpleMd5Signature(fullName + year, serverRuntimeConfig.APICreateSuperUserKey, signedName)) {
             throw new HttpError(401, "Invalid signature for name " + fullName);
         }
     }
