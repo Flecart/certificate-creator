@@ -32,32 +32,33 @@ export default async function handler(
     }
 
     let name : string;
+    return res.status(400).json({ error: 'Scusate il disguido, avevamo creato il certificato ma non avevamo aggiornato il testo. Rimettiamo il sito online in 48h' })
 
-    if (!listName) {
-        return res.status(400).json({ error: 'Missing the name of the list for admin setting creation' })
-    }
+    // if (!listName) {
+    //     return res.status(400).json({ error: 'Missing the name of the list for admin setting creation' })
+    // }
 
-    const configResponse = await configService.getConfig(listName);
-    if (configResponse.error) {
-        return res.status(400).json({ error: configResponse.error.message })
-    }
+    // const configResponse = await configService.getConfig(listName);
+    // if (configResponse.error) {
+    //     return res.status(400).json({ error: configResponse.error.message })
+    // }
 
-    name = fullName;
+    // name = fullName;
 
-    try {
-        const imageData = await createPDF(name, configResponse.data, year);
+    // try {
+    //     const imageData = await createPDF(name, configResponse.data, year);
 
-        res.setHeader('Content-Type', 'application/pdf');
-        // TODO: change filename, should be put to config
-        res.setHeader('Content-Disposition', `attachment; filename="LTF certificate 2023 - ${name}.pdf"`);
-        res.send(imageData);
+    //     res.setHeader('Content-Type', 'application/pdf');
+    //     // TODO: change filename, should be put to config
+    //     res.setHeader('Content-Disposition', `attachment; filename="LTF certificate 2023 - ${name}.pdf"`);
+    //     res.send(imageData);
  
-    } catch (error) {
-        console.error(error);
-        if (error instanceof Error) {
-            return res.status(400).json({ error: error.message });
-        } else {
-            return res.status(400).json({ error: "Unknown error has occurred" });
-        }
-    }
+    // } catch (error) {
+    //     console.error(error);
+    //     if (error instanceof Error) {
+    //         return res.status(400).json({ error: error.message });
+    //     } else {
+    //         return res.status(400).json({ error: "Unknown error has occurred" });
+    //     }
+    // }
 }
