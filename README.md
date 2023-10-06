@@ -32,5 +32,6 @@ curl -H "Content-Type: application/json" --request POST  --data @body.json [host
 
 ```bash
 
-curl  -F upload=@image.jpeg <host_base_url>/api/certificate/template?list=list-name&keySuperUser=<key-placeholder>
+
+curl  -F upload=@image.jpeg "<host_base_url>/api/certificate/template?list=list-name&keySuperUser=<key-placeholder>"
 ```
