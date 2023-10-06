@@ -10,6 +10,7 @@ export function calculateMD5(input: string): string {
 }
 
 function verifySimpleMd5Signature(message: string, secret: string, signature: string): boolean {
+    console.log(message)
     const hash = calculateMD5(message + secret);
     return hash === signature;
 }
@@ -49,7 +50,12 @@ export function tryQueryAuthCheck(req: NextApiRequest): void { // throws HttpErr
     
         if(!verifySignature(fullName + year, serverRuntimeConfig.APICreateSuperUserKey, signedName)
             &&
-        !verifySimpleMd5Signature(fullName + year, serverRuntimeConfig.APICreateSuperUserKey, signedName)) {
+        !verifySimpleMd5Signature(fullName + year, serverRuntimeConfig.APICreateSuperUserKey, signedName) && 
+
+        // for backward compatibility, if the year was not specified, the year needs to be equal 2024. This is gonna be removed
+        !((year=='2024')
+         && (verifySimpleMd5Signature(fullName , serverRuntimeConfig.APICreateSuperUserKey, signedName) ))) // test user
+         {
             throw new HttpError(401, "Invalid signature for name " + fullName);
         }
     }
