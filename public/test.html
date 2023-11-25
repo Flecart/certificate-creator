@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mia Città Event Page</title>
+    <style>
+        @font-face {
+            font-family: 'AtypDisplay';
+            src: url('./public/font/AtypDisplay-Bold.otf') format('opentype');
+            font-weight: bold;
+        }
+        @font-face {
+            font-family: 'AtypDisplayItalic';
+            src: url('./public/font/AtypDisplay-BoldItalic.otf') format('opentype');
+            font-weight: bold;
+            font-style: italic;
+        }
+        @font-face {
+            font-family: 'UberMoveMedium';
+            src: url('./public/font/UberMoveMedium.otf') format('opentype');
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('./public/ltf/cities/london.jpeg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            width: 1200px;
+            height: 627px;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            color: white;
+        }
+        .text-block {
+            position: absolute;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+        #event {
+            left: 56px;
+            top: 47px;
+            width: 284px;
+            font-size: 55px;
+            color: white;
+            font-family: 'AtypDisplay';
+        }
+        #title {
+            left: 383px;
+            top: 72px;
+            width: 670px;
+            font-size: 36px;
+            color: white;
+            font-family: 'AtypDisplayItalic';
+        }
+        /* Additional styles for other text elements using the custom fonts */
+        #logo {
+            position: absolute;
+            right: 53px;
+            top: 43px;
+            width: 39px;
+            height: 43px;
+        }
+    </style>
+</head>
+<body>
+    <div id="event" class="text-block">meet THE FUTURE</div>
+    <div id="title" class="text-block">Mia Città</div>
+    <!-- Additional divs for other text elements... -->
+    <img id="logo" src="./public/ltf/LTF_Logo_Bianco.png" alt="Event Logo">
+</body>
+</html>
