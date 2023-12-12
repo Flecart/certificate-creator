@@ -42,7 +42,7 @@ async function createPDFBlob(name: string, config: ConfigRequest, year: number |
             top: 0,
            bottom:0,
             left: 0,
-          right: 0
+          right: 0w
         },
         size: 'A4',
     });

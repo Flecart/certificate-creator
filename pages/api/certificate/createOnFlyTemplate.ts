@@ -8,6 +8,12 @@ import { HttpError } from '@/models/errors';
 import sharp from 'sharp';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument } from 'pdf-lib';
+import { send } from 'node:process';
+import { buffer } from 'stream/consumers';
+// import { pdf } from 'pdf-to-img';
+// import pdfimgconvert from 'pdf-img-convert'
+// import { fromPath } from "pdf2pic";
+// import { fromBuffer as convertPdfToPng } from 'pdf2pic'
 
 
 type ImageProperties = {
@@ -135,7 +141,7 @@ function drawPolygonLine(doc: any, lineConfig: PolygonConfig) {
   }
 
 
-async function createPDFBlob(config: ConfigRequest, outputFormat: 'pdf' | 'png'): Promise<Blob> {
+async function createPDFBlob(config: ConfigRequest): Promise<Blob> {
     const docSettings = {
         margins: { top: 0, bottom: 0, left: 0, right: 0 },
         size: config.documentConfig.size,
@@ -170,52 +176,38 @@ async function createPDFBlob(config: ConfigRequest, outputFormat: 'pdf' | 'png')
 
     return new Promise((resolve, reject) => {
         stream.on('finish', async () => {
-            if (outputFormat === 'pdf') {
                 resolve(stream.toBlob('application/pdf'));
-            } else if (outputFormat === 'png') {
-                try {
-                    const pngBlob = await convertPdfStreamToPng(stream);
-                    resolve(new Blob([pngBlob], { type: 'image/png' }));
-                } catch (error) {
-                    reject(error);
-                }
-            }
         });
         stream.on('error', reject);
     });
 }
 
 
+// async function convertPdfStreamToPng(pdfStream: blobStream.IBlobStream) {
+//     // Convert the stream to a Buffer
 
-async function convertPdfStreamToPng(pdfStream: blobStream.IBlobStream) {
-    // Convert the stream to a Buffer
+//     const pdfBuffer = Buffer.Buffer.concat(await streamToBuffer(pdfStream));
 
-    const pdfBuffer = Buffer.Buffer.concat(await streamToBuffer(pdfStream));
-    throw new Error("asd");
+//     // Convert the first page to PNG (as an example)
+//     const pngImage = await sharp(pdfBuffer, { 
+//         pages: 1, 
+//         page: 0,
+//         density: 300
+//     }).png().toBuffer();
 
-    // Convert the first page to PNG (as an example)
-    const pngImage = await sharp(pdfBuffer, { 
-        pages: 1, 
-        page: 0,
-        density: 300
-    }).png().toBuffer();
-
-    return pngImage;
-}
-
-function streamToBuffer(stream: blobStream.IBlobStream) : Promise<Uint8Array[]>{
-    return new Promise((resolve, reject) => {
-        const chunks: Buffer[] = [];
-        stream.on('data', chunk => chunks.push(Buffer.Buffer.from(chunk)));
-        stream.on('error', err => reject(err));
-        stream.on('end', () => resolve(chunks));
-    });
-}
+//     return pngImage;
+// }
 
 
 export async function createPDF(config: ConfigRequest): Promise<Buffer.Buffer>  {
-    const pdfBlob = await createPDFBlob(config, 'png');
-    return convertBlobToBuffer(pdfBlob);
+    const pdfBlob = await createPDFBlob(config);
+    const chunks = [];
+    // @ts-ignore Type 'ReadableStream<Uint8Array>' is not an array type or a string type.
+    for await (const chunk of pdfBlob.stream()) {
+        chunks.push(Buffer.Buffer.from(chunk));
+    }
+
+    return Buffer.Buffer.concat(chunks)
 }
 
 type Data = {
@@ -223,31 +215,21 @@ type Data = {
     error?: string
 };
 
-function convertBlobToBuffer(pdfBlob: Blob) {
-    const chunks = [];
-
-    // @ts-ignore Type 'ReadableStream<Uint8Array>' is not an array type or a string type.
-    for await (const chunk of pdfBlob.stream()) {
-        chunks.push(Buffer.Buffer.from(chunk));
-    }
-
-    return Buffer.Buffer.concat(chunks);
-}
-
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<Data | Buffer>
 ) {
 
-    // try {
-    //     signatureService.tryQueryAuthCheck(req);
-    // } catch (error) {
-    //     if (error instanceof HttpError) {
-    //         return res.status(error.statusCode).json({ error: error.message });
-    //     } else {
-    //         return res.status(400).json({ error: "Unknown error has occurred in auth checking" });
-    //     }
-    // }
+    try {
+        signatureService.tryQueryAuthCheck(req);
+    } catch (error) {
+        if (error instanceof HttpError) {
+            return res.status(error.statusCode).json({ error: error.message });
+        } else {
+            return res.status(400).json({ error: "Unknown error has occurred in auth checking" });
+        }
+    }
+
 
     try {
         // Get the config from the user request
@@ -255,34 +237,10 @@ export default async function handler(
 
         const pdfBuffer = await createPDF(configData);
 
-        let paramReturnPdf = req.query.returnPdf as string || "false";
-
-        // if (paramReturnPdf.toLowerCase() === "false") {
-
-            res.setHeader('Content-Type', 'application/pdf');
-            // TODO: change filename, should be put to config
-            res.setHeader('Content-Disposition', `attachment; filename="LTF certificate 2023 - .pdf"`);
-            res.send(pdfBuffer);
-        // }else{
-
-        //     const pngBuffer = await sharp(pdfBuffer, { 
-        //         density: 300, // Adjust as needed for resolution
-        //         pages: 1      // Only convert the first page
-        //     })
-        //     .png()
-        //     .toBuffer();
-        //     throw new Error("asd");
-
-        //     // Send the PNG buffer as response
-        //     res.setHeader('Content-Type', 'image/png');
-        //     res.setHeader('Content-Disposition', `attachment; filename="output.png"`);
-        //     res.send(pngBuffer);
-            
-        // }
-
- 
-        // Implement your logic to handle the PDF buffer (e.g., save to storage, send as response, etc.)
-
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Content-Disposition', `attachment; filename="output.png"`);
+        res.send(pdfBuffer);
+        
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Internal Server Error' });
