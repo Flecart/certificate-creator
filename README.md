@@ -349,11 +349,30 @@ curl -X POST http://localhost:3000/api/certificate/a \
 
 
 
-curl -X POST 'http://localhost:3000/api/eventbrite/createEvent' \
+
+curl -X POST 'http://certificate-creator-steel.vercel.app' \
 -H 'Content-Type: application/json' \
 -d '{
     "title": "Sample Event Title",
+    "locationName": "zurigo",
+    "locationCity": "zurigos",
     "timezone": "Europe/Rome",
     "date": "2023-12-25",
     "hour": "18:00",
+    "description": "Sample Event Description"
+}'
+
+
+// localhost
+
+curl -X POST 'http://localhost:3001/api/eventbrite/createEvent' \
+-H 'Content-Type: application/json' \
+-d '{
+    "title": "Sample Event Title",
+    "locationName": "zurigo",
+    "locationCity": "zurigos",
+    "timezone": "Europe/Rome",
+    "date": "2023-12-25",
+    "hour": "18:00",
+    "description": "Sample Event Description"
 }'

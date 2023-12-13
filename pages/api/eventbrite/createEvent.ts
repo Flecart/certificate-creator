@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { isConditionalExpression } from 'typescript';
 import { createVenue, uploadImageToEventbrite } from './evenbriteApi';
 import { ConfigRequest, generateImage } from '../certificate/createOnFlyTemplatePng';
-import { imageConfig } from './eventImage';
+import { imageConfigBackgroundScuro } from './eventImage';
 
 type Data = {
     data?: string,
@@ -134,12 +134,24 @@ export default async function handler(
     const months = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
 
     // make a defensive copy of imageConfig
-    let imageConfigCurrent = JSON.parse(JSON.stringify(imageConfig))
+    let imageConfigCurrent = JSON.parse(JSON.stringify(imageConfigBackgroundScuro))
     imageConfigCurrent["textConfigs"]["title"]["defaultTextValue"] = eventDetails.title
+
+    let imagePath = "/public/ltf/cities/" + eventDetails.locationCity.replace(".","").toLowerCase() + "-scuro.png";
+
+    // verify that the file exists
+    const fs = require('fs');
+    if (!fs.existsSync(process.cwd() + imagePath)) {
+      // TODO download an image? use a default template image that works with anything? to decide
+      imagePath = "/public/ltf/cities/bologna-scuro.png";
+    }
+
+    // TODO configurare il background con l'immagine della  eventDetails.locationName
+    imageConfigCurrent["documentConfig"]["backgroundImage"]["url"] = imagePath;
 
     let eventDate = eventDetails.date.split("-");
     imageConfigCurrent["textConfigs"]["dateDayOfMonth"]["defaultTextValue"] = eventDetails.date.split("-")[2] + " " + months[parseInt(eventDate[1], 10) - 1]
-    imageConfigCurrent["textConfigs"]["dateHour"]["defaultTextValue"] = "h "+eventDetails.hour.replace(':','.')
+    imageConfigCurrent["textConfigs"]["dateHour"]["defaultTextValue"] = "h " + eventDetails.hour.replace(':','.')
     imageConfigCurrent["textConfigs"]["eventLocation"]["defaultTextValue"] = eventDetails.locationName
 
 
@@ -152,6 +164,7 @@ export default async function handler(
     console.log("create an event")
     // Step 1: Create Event
     eventDetails.venue_id = venueId
+    eventDetails.currency = "EUR"
     const eventResponse = await createEventOnEventbrite(eventDetails, organizationId);
 
     if (eventResponse.error) throw new Error(eventResponse.error.description);
@@ -193,8 +206,9 @@ export default async function handler(
 
     console.log("publish event")
     // publishEvent(eventResponse.id);
-      // Step 3: Publish Event
-      // ... (Same as previous code for publishing the event)
+
+    console.log("go to your events: https://www.eventbrite.it/organizations/events/draft")
+
 
       return res.status(200).json({ data: `Event created and published successfully with ID: ${eventResponse.id}` });
   } catch (error: any) {

@@ -1,20 +1,20 @@
 
 
-export let imageConfig = {
+export let imageConfigBackgroundScuro = {
   "textConfigs":{
-     "event":{
-        "defaultTextValue":"meet THE FUTURE",
-        "textProperties":{
-           "fontWidth":55,
-           "position":{
-              "x":56,
-              "y":47
-           },
-           "boxLength":284,
-           "fontName":"AtypDisplay-Bold.otf",
-           "fontColor":"white"
-        }
-     },
+   //   "event":{
+   //      "defaultTextValue":"meet THE FUTURE",
+   //      "textProperties":{
+   //         "fontWidth":55,
+   //         "position":{
+   //            "x":56,
+   //            "y":47
+   //         },
+   //         "boxLength":284,
+   //         "fontName":"AtypDisplay-Bold.otf",
+   //         "fontColor":"white"
+   //      }
+   //   },
      "title":{
         "defaultTextValue":"Mia Città",
         "textProperties":{
@@ -95,25 +95,25 @@ export let imageConfig = {
      }
   },
   "imageConfigs":{
-     "logoRightTop":{
-        "url":"/public/ltf/LTF_Logo_Bianco.png",
-        "position":{
-           "x":1108,
-           "y":43
-        },
-        "size":{
-           "width":39,
-           "height":43
-        }
-     }
+   //   "logoRightTop":{
+   //      "url":"/public/ltf/LTF_Logo_Bianco.png",
+   //      "position":{
+   //         "x":1108,
+   //         "y":43
+   //      },
+   //      "size":{
+   //         "width":39,
+   //         "height":43
+   //      }
+   //   }
   },
   "polygonConfig":{
-     "divider":{
-        "x":367,
-        "y":61,
-        "height":264,
-        "width":4
-     }
+   //   "divider":{
+   //      "x":367,
+   //      "y":61,
+   //      "height":264,
+   //      "width":4
+   //   }
   },
   "documentConfig":{
      "size":[
