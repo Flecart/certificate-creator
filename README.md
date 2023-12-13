@@ -354,6 +354,7 @@ curl -X POST 'http://certificate-creator-steel.vercel.app' \
 -H 'Content-Type: application/json' \
 -d '{
     "title": "Sample Event Title",
+    "imgTitle": "Sample Event Title",
     "locationName": "zurigo",
     "locationCity": "zurigos",
     "timezone": "Europe/Rome",

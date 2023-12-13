@@ -135,7 +135,7 @@ export default async function handler(
 
     // make a defensive copy of imageConfig
     let imageConfigCurrent = JSON.parse(JSON.stringify(imageConfigBackgroundScuro))
-    imageConfigCurrent["textConfigs"]["title"]["defaultTextValue"] = eventDetails.title
+    imageConfigCurrent["textConfigs"]["title"]["defaultTextValue"] = eventDetails.imgTitle
 
     let imagePath = "/public/ltf/cities/" + eventDetails.locationCity.replace(".","").toLowerCase() + "-scuro.png";
 
