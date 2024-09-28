@@ -53,7 +53,7 @@ export function tryQueryAuthCheck(req: NextApiRequest): void { // throws HttpErr
         !verifySimpleMd5Signature(fullName + year, serverRuntimeConfig.APICreateSuperUserKey, signedName) && 
 
         // for backward compatibility, if the year was not specified, the year needs to be equal 2024. This is gonna be removed
-        !((year=='2024')
+        !((year=='2025')
          && (verifySimpleMd5Signature(fullName , serverRuntimeConfig.APICreateSuperUserKey, signedName) ))) // test user
          {
             throw new HttpError(401, "Invalid signature for name " + fullName);
