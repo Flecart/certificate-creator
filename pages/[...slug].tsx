@@ -2,53 +2,27 @@ import { GetServerSideProps } from 'next'
 
 const NEW_BASE_URL = 'https://certificate-creator-steel.vercel.app'
 
-export default function CatchAllPage({ html }: { html: string }) {
-  return <div dangerouslySetInnerHTML={{ __html: html }} />
+export default function CatchAllPage() {
+  return null
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  try {
-    const { slug, ...queryParams } = context.query
-    
-    // Reconstruct the original path
-    const pathSegments = Array.isArray(slug) ? slug : [slug]
-    const originalPath = `/${pathSegments.join('/')}`
-    
-    // Build query string from remaining parameters
-    const queryString = new URLSearchParams(queryParams as Record<string, string>).toString()
-    
-    // Construct the new URL
-    const newUrl = `${NEW_BASE_URL}${originalPath}${queryString ? `?${queryString}` : ''}`
-    
-    // Make the request to the new URL
-    const response = await fetch(newUrl, {
-      method: 'GET',
-      headers: {
-        'User-Agent': context.req.headers['user-agent'] || 'Proxy-Request',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Accept-Encoding': 'gzip, deflate',
-        'Connection': 'keep-alive',
-      },
-    })
-    
-    if (!response.ok) {
-      return {
-        notFound: true,
-      }
-    }
-    
-    const html = await response.text()
-    
-    return {
-      props: {
-        html,
-      },
-    }
-  } catch (error) {
-    console.error('Proxy error:', error)
-    return {
-      notFound: true,
-    }
+  const { slug, ...queryParams } = context.query
+  
+  // Reconstruct the original path
+  const pathSegments = Array.isArray(slug) ? slug : [slug]
+  const originalPath = `/${pathSegments.join('/')}`
+  
+  // Build query string from remaining parameters
+  const queryString = new URLSearchParams(queryParams as Record<string, string>).toString()
+  
+  // Construct the new URL
+  const newUrl = `${NEW_BASE_URL}${originalPath}${queryString ? `?${queryString}` : ''}`
+  
+  return {
+    redirect: {
+      destination: newUrl,
+      permanent: true,
+    },
   }
 }
