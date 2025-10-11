@@ -1,0 +1,6 @@
+{
+    "redirects": [
+      { "source": "/:slug", "destination": "https://certificate-creator-steel.vercel.app/:slug", "permanent": true }
+    ]
+  }
+  
